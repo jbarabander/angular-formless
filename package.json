@@ -23,5 +23,8 @@
   "dependencies": {
     "Formless": "^1.0.4",
     "angular": "^1.5.6"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.1"
   }
 }
