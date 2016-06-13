@@ -1,0 +1,27 @@
+{
+  "name": "angular-formless",
+  "version": "1.0.0",
+  "description": "angular bridge for Formless",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jbarabander/angular-formless.git"
+  },
+  "keywords": [
+    "angular",
+    "formless"
+  ],
+  "author": "Justin Barabander",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jbarabander/angular-formless/issues"
+  },
+  "homepage": "https://github.com/jbarabander/angular-formless#readme",
+  "dependencies": {
+    "Formless": "^1.0.4",
+    "angular": "^1.5.6"
+  }
+}
