@@ -26,6 +26,18 @@ function formlessDirective ($document, FormlessFactory) {
 				_internalHash[element.attr('formlessName')] = element.controller('ngModel');
 			});
 
+			scope.grabValidators = function (actualHash, controller) {
+				var validationKeys = Object.keys(controller.$validators);
+				validationKeys.forEach(function (element) {
+					var actualValidator = controller.$validators[element]
+					scope.formlessInstance.register(element, function (modelValue) {
+						return actualValidator(modelValue, modelValue)
+					})
+				})
+				return validationKeys.map(function (element) {
+					return {validator: element}
+				})
+			}
 			// check into each functions ngModel controller for validators
 			// register these validators with the instance and add those results to formlessInstance
 		}
