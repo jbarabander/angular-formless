@@ -3,7 +3,7 @@ var angular = require('angular');
 angular.module('formless', [])
 .directive('formless', formlessDirective);
 
-function formlessDirective ($document, FormlessFactory) {
+function formlessDirective (FormlessFactory, $timeout) {
 	return {
 		restrict: 'A',
 		scope: {
@@ -21,22 +21,25 @@ function formlessDirective ($document, FormlessFactory) {
 			if (!scope.formlessInstance.fields) {
 				scope.formlessInstance.fields = {}
 			}
-			var _internalHash = {}
+			var _internalHash = {};
 			ngModelElementsWithFormlessNames.forEach(function (element) {
-				_internalHash[element.attr('formlessName')] = element.controller('ngModel');
+				var ngModelController = element.controller('ngModel');
+				_internalHash[element.attr('formlessName')] = grabValidators(ngModelController);
+				registerValidators(scope.formlessInstance, ngModelController);
 			});
 
-			scope.grabValidators = function (actualHash, controller) {
-				var validationKeys = Object.keys(controller.$validators);
+			function registerValidators (formlessInstance, controller) {
+				var validationKeys = grabValidators(controller);
 				validationKeys.forEach(function (element) {
-					var actualValidator = controller.$validators[element]
-					scope.formlessInstance.register(element, function (modelValue) {
-						return actualValidator(modelValue, modelValue)
-					})
-				})
-				return validationKeys.map(function (element) {
-					return {validator: element}
-				})
+					var actualValidator = controller.$validators[element];
+					formlessInstance.register(element, function (modelValue) {
+						return actualValidator(modelValue, modelValue);
+					});
+				});
+			}
+
+			function grabValidators (controller) {
+				return Object.keys(controller.$validators);
 			}
 			// check into each functions ngModel controller for validators
 			// register these validators with the instance and add those results to formlessInstance
@@ -44,4 +47,4 @@ function formlessDirective ($document, FormlessFactory) {
 	};
 }
 
-formlessDirective.$inject = ['$document', 'FormlessFactory'];
+formlessDirective.$inject = ['FormlessFactory', '$timeout'];
