@@ -7,7 +7,8 @@ function formlessDirective (FormlessFactory, $timeout) {
 	return {
 		restrict: 'A',
 		scope: {
-			formlessInstance: '='
+			formlessInstance: '=',
+			schema: '='
 		},
 		link: function (scope, element, attr) {
 			// lets go and get all the child elements who have ng-model on them
