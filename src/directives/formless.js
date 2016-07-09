@@ -16,7 +16,7 @@ function formlessDirective (FormlessFactory, $timeout) {
 			var originalRemoveControl = form.$removeControl;
 			form.$addControl = function (control) {
 				try {
-					// my additions
+					formlessAddValidators(control, scope.formlessInstance, scope.formlessSchema);
 				} catch (e) {
 					console.error('Failed to instatiate Formless controls');
 					console.error(e);
@@ -47,14 +47,15 @@ function formlessAddValidators (control, formlessInstance, formlessSchema) {
 	currValidatorsArr.map(function (validatorObj) {
 		return formlessInstance._parseValidatorObj(validatorObj);
 	}).forEach(function (filledValidatorObj) {
-		control.$validators[filledValidatorObj.validator.name] = function (modelValue, viewValue) {
+		var validatorName = filledValidatorObj.validator.name;
+		control.$validators[validatorName] = function (modelValue, viewValue) {
 			var subModel = {};
 			var subSchema = {};
 			subModel[propName] = viewValue;
 			subSchema[propName] = filledValidatorObj;
 			return formlessInstance.compareSyncOnly(subModel, subSchema).passed;
 		}
-	})
+	});
 }
 
 formlessDirective.$inject = ['FormlessFactory', '$timeout'];
