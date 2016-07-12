@@ -20,6 +20,7 @@ function formlessDirective ($timeout) {
 						try {
 							$timeout(function () {
 								formlessAddValidators(control, scope.formlessInstance, scope.schema);
+								control.$validate();
 							})
 						} catch (e) {
 							console.error('Failed to instatiate Formless controls');
