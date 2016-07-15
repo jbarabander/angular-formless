@@ -1,8 +1,3 @@
-var angular = require('angular');
-
-angular.module('formless', [])
-.directive('formless', formlessDirective);
-
 function formlessDirective ($timeout) {
 	return {
 		restrict: 'A',
@@ -82,3 +77,5 @@ function formlessAddValidators (control, formlessInstance, formlessSchema) {
 }
 
 formlessDirective.$inject = ['$timeout'];
+
+module.exports = formlessDirective;

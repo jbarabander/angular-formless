@@ -4,7 +4,8 @@
   "description": "angular bridge for Formless",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "./node_modules/.bin/browserify src/index.js > angularFormless.js --standalone angular-formless"
   },
   "repository": {
     "type": "git",
