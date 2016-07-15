@@ -15,10 +15,10 @@ function formlessDirective ($timeout) {
 					form.$addControl = function (control) {
 						try {
 							scope.controls.push(control);
-							$timeout(function () {
-								formlessAddValidators(control, scope.formlessInstance, scope.schema);
-								control.$validate();
-							})
+							// $timeout(function () {
+							// 	formlessAddValidators(control, scope.formlessInstance, scope.schema);
+							// 	control.$validate();
+							// })
 						} catch (e) {
 							console.error('Failed to instatiate Formless controls');
 							console.error(e);
@@ -37,17 +37,17 @@ function formlessDirective ($timeout) {
 						}
 						originalRemoveControl(control);
 					}
+				},
+				post: function (scope) {
+					scope.$watchCollection('controls', function (controlsArr) {
+						controlsArr.forEach(function (control) {
+							formlessAddValidators(control, scope.formlessInstance, scope.schema);
+							control.$validate();
+						});
+					});
 				}
 			}
 		},
-		link: function (scope, element, attr, form) {
-			scope.$watchCollection('controls', function (controlsArr) {
-				controlsArr.forEach(function (control) {
-					formlessAddValidators(control, scope.formlessInstance, scope.schema);
-					control.$validate();
-				});
-			});
-		}
 	};
 }
 
