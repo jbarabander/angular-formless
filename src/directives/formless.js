@@ -14,10 +14,12 @@ function formlessDirective ($timeout) {
 		compile: function () {
 			return {
 				pre: function (scope, element, attr, form) {
+					scope.controls = []
 					var originalAddControl = form.$addControl;
 					var originalRemoveControl = form.$removeControl;
 					form.$addControl = function (control) {
 						try {
+							scope.controls.push(control);
 							$timeout(function () {
 								formlessAddValidators(control, scope.formlessInstance, scope.schema);
 								control.$validate();
@@ -30,6 +32,8 @@ function formlessDirective ($timeout) {
 					}
 
 					form.$removeControl = function (control) {
+						var indexOfControl = scope.controls.indexOf(control)
+						scope.controls.splice(indexOfControl, 1)
 						try {
 							// my additions
 						} catch (e) {
@@ -40,6 +44,14 @@ function formlessDirective ($timeout) {
 					}
 				}
 			}
+		},
+		link: function (scope, element, attr, form) {
+			scope.$watchCollection('controls', function (controlsArr) {
+				controlsArr.forEach(function (control) {
+					formlessAddValidators(control, scope.formlessInstance, scope.schema);
+					control.$validate();
+				});
+			});
 		}
 	};
 }
@@ -54,7 +66,6 @@ function formlessAddValidators (control, formlessInstance, formlessSchema) {
 	if (!currValidatorsArr) {
 		return;
 	}
-	console.log(currValidatorsArr)
 	currValidatorsArr.map(function (validatorObj) {
 		return formlessInstance._parseValidatorObj(validatorObj);
 	}).forEach(function (filledValidatorObj) {
