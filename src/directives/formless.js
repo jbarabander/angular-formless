@@ -1,3 +1,5 @@
+var difference = require('lodash.difference');
+
 function formlessDirective ($timeout) {
 	return {
 		restrict: 'A',
@@ -39,8 +41,10 @@ function formlessDirective ($timeout) {
 					}
 				},
 				post: function (scope) {
-					scope.$watchCollection('controls', function (controlsArr) {
-						controlsArr.forEach(function (control) {
+					scope.$watchCollection('controls', function (newControls, oldControls) {
+						var addedControls = difference(newControls, oldControls);
+						var removedControls = difference(oldControls, newControls);
+						addedControls.forEach(function (control) {
 							formlessAddValidators(control, scope.formlessInstance, scope.schema);
 							control.$validate();
 						});
