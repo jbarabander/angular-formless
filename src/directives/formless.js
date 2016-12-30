@@ -11,7 +11,8 @@ function formlessDirective ($timeout) {
 		compile: function () {
 			return {
 				pre: function (scope, element, attr, form) {
-					scope.controls = []
+					scope.controls = [];
+					scope.subModel = {};
 					var originalAddControl = form.$addControl;
 					var originalRemoveControl = form.$removeControl;
 					form.$addControl = function (control) {
@@ -29,10 +30,9 @@ function formlessDirective ($timeout) {
 					}
 
 					form.$removeControl = function (control) {
-						var indexOfControl = scope.controls.indexOf(control)
-						scope.controls.splice(indexOfControl, 1)
 						try {
-							// my additions
+							var indexOfControl = scope.controls.indexOf(control)
+							scope.controls.splice(indexOfControl, 1)
 						} catch (e) {
 							console.error('Failed to remove Formless controls');
 							console.error(e);
@@ -43,7 +43,7 @@ function formlessDirective ($timeout) {
 				post: function (scope) {
 					scope.$watchCollection('controls', function (newControls, oldControls) {
 						var addedControls = difference(newControls, oldControls);
-						var removedControls = difference(oldControls, newControls);
+						// var removedControls = difference(oldControls, newControls);
 						addedControls.forEach(function (control) {
 							formlessAddValidators(control, scope.formlessInstance, scope.schema);
 							control.$validate();
