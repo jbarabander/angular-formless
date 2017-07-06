@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepublish": "./node_modules/.bin/browserify src/index.js > angularFormless.js --standalone angular-formless"
+    "prepublish": "./node_modules/.bin/browserify src/index.js > angularFormless.js --standalone angular-formless",
+    "start": "./node_modules/.bin/browserify src/index.js > angularFormless.js --standalone angular-formless"
   },
   "repository": {
     "type": "git",
