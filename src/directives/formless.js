@@ -1,5 +1,5 @@
 var difference = require('lodash.difference');
-
+var Formless = require('Formless');
 function formlessDirective ($timeout) {
 	return {
 		restrict: 'A',
@@ -8,20 +8,16 @@ function formlessDirective ($timeout) {
 			schema: '='
 		},
 		require: '?form',
-		compile: function () {
-			return {
-				pre: function (scope, element, attr, form) {
+		link: {
+				pre: function (scope, element, attrs, form) {
 					scope.controls = [];
 					scope.subModel = {};
-					var originalAddControl = form.$addControl;
-					var originalRemoveControl = form.$removeControl;
+					var originalAddControl = form.$addControl.bind(form);
+					var originalRemoveControl = form.$removeControl.bind(form);
+
 					form.$addControl = function (control) {
 						try {
 							scope.controls.push(control);
-							// $timeout(function () {
-							// 	formlessAddValidators(control, scope.formlessInstance, scope.schema);
-							// 	control.$validate();
-							// })
 						} catch (e) {
 							console.error('Failed to instatiate Formless controls');
 							console.error(e);
@@ -31,8 +27,8 @@ function formlessDirective ($timeout) {
 
 					form.$removeControl = function (control) {
 						try {
-							var indexOfControl = scope.controls.indexOf(control)
-							scope.controls.splice(indexOfControl, 1)
+							var indexOfControl = scope.controls.indexOf(control);
+							scope.controls.splice(indexOfControl, 1);
 						} catch (e) {
 							console.error('Failed to remove Formless controls');
 							console.error(e);
@@ -40,22 +36,64 @@ function formlessDirective ($timeout) {
 						originalRemoveControl(control);
 					}
 				},
-				post: function (scope) {
-					scope.$watchCollection('controls', function (newControls, oldControls) {
-						var addedControls = difference(newControls, oldControls);
-						// var removedControls = difference(oldControls, newControls);
-						addedControls.forEach(function (control) {
-							formlessAddValidators(control, scope.formlessInstance, scope.schema);
+				post: function (scope, el, attrs, form) {
+					var unWatchers = {};
+					var internalFormless;
+					var defaultFormlessInstance = new Formless();
+					scope.setInternalFormless = function (formlessInstanceVal) {
+						internalFormless = formlessInstanceVal || defaultFormlessInstance;
+						if (attrs.$attr.formlessInstance === 'formless-instance') {
+							scope.formlessInstance = internalFormless;
+						}
+					};
+					scope.updateAndValidateControls = function(controls) {
+						scope.setInternalFormless(scope.formlessInstance);
+						scope.updateWatchersAndSubModel();
+						controls.forEach(function (control) {
+							formlessAddValidators(control, internalFormless, scope.schema, scope.subModel);
 							control.$validate();
 						});
+					}
+					scope.updateWatchersAndSubModel = function () {
+						if (!scope.schema || !form) {
+							return;
+						}
+						angular.forEach(scope.subModel, function (control, key) {
+							if (!form[key]) {
+								delete scope.subModel[key];
+								unWatchers[key]();
+								delete unWatchers[key];
+							}
+						});
+						angular.forEach(form.$$controls, function (control) {
+							var propName = control.formlessName ? control.formlessName : control.$name;
+							if (!unWatchers[propName]) {
+								// these are about as efficient as watchers can be. 
+								// Simple equality watchers that are removed the instant the control is.
+								var unWatch = scope.$watch(function () {
+									if (form[propName]) {
+										return form[propName].$modelValue;
+									}
+								}, function (newValue) {
+									scope.subModel[propName] = newValue;
+								})
+								unWatchers[propName] = unWatch;
+							}
+						})
+					}
+					scope.$watchCollection('controls', function (newControls, oldControls) {
+						var addedControls = difference(newControls, oldControls);
+						scope.updateAndValidateControls(addedControls)
+					});
+					$timeout(() => {
+						scope.updateAndValidateControls(scope.controls);
 					});
 				}
 			}
-		},
 	};
 }
 
-function formlessAddValidators (control, formlessInstance, formlessSchema) {
+function formlessAddValidators (control, formlessInstance, formlessSchema, subModel) {
 	var propName = control.formlessName ? control.formlessName : control.$name;
 	var currSchemaProp = formlessSchema[propName];
 	if (!currSchemaProp) {
@@ -70,12 +108,11 @@ function formlessAddValidators (control, formlessInstance, formlessSchema) {
 	}).forEach(function (filledValidatorObj) {
 		var validatorName = filledValidatorObj.validator.name;
 		control.$validators[validatorName] = function (modelValue, viewValue) {
-			var subModel = {};
 			var subSchema = {};
-			subModel[propName] = viewValue;
+			const localSubModel = Object.assign({}, subModel);
+			localSubModel[propName] = modelValue;
 			subSchema[propName] = filledValidatorObj;
-			var valResult = formlessInstance.compareSyncOnly(subModel, subSchema);
-			return formlessInstance.compareSyncOnly(subModel, subSchema)[propName].passed;
+			return formlessInstance.compareSyncOnly(localSubModel, subSchema)[propName].passed;
 		}
 	});
 }
