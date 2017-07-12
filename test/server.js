@@ -10,6 +10,6 @@ app.use('*', function (req, res) {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(3000, function () {
-    console.log('app is listening on port 3000');
+app.listen(1337, function () {
+    console.log('app is listening on port 1337');
 });
