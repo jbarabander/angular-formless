@@ -16,7 +16,6 @@
                     <div ng-show="fakeForm.testInput2.$error.formlessIsDate">This is not a date</div>
                 </div>
                 <button ng-click="toggleDate()">Toggle Date</button>
-                <pre>{{fakeForm | json}}</pre>
             </form>
             `,
             link: function (scope, element, attr) {
