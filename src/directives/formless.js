@@ -55,8 +55,8 @@ function formlessDirective ($timeout) {
 
 					form.$removeControl = function (control) {
 						try {
-							var indexOfControl = scope.controls.indexOf(control)
-							scope.controls.splice(indexOfControl, 1)
+							var indexOfControl = scope.controls.indexOf(control);
+							scope.controls.splice(indexOfControl, 1);
 						} catch (e) {
 							console.error('Failed to remove Formless controls');
 							console.error(e);
